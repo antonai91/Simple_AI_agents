@@ -61,7 +61,7 @@ def get_institutional_holders(ticker):
     tck = yf.Ticker(ticker)
     return tck.institutional_holders
 
-def get_ticker(company_name):
+def get_ticker(company_name: str) -> str:
     """
     Get the ticker based on the company name
     Parameters:
