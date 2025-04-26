@@ -4,19 +4,6 @@ import requests
 from langchain_core.tools import tool
 
 @tool
-def STOCK(ticker: str, period: str="max") -> pd.DataFrame:
-    """
-    Function to get open, high, low, ... data of a stock in a tabular format
-    :Parameters:
-    period : str
-        Valid periods: 1d,5d,1mo,3mo,6mo,1y,2y,5y,10y,ytd,max
-    interval : str
-        Valid intervals: 1m,2m,5m,15m,30m,60m,90m,1h,1d,5d,1wk,1mo,3mo
-        Intraday data cannot extend last 60 days
-    """
-    return yf.Ticker(ticker).history(period=period).reset_index(drop=False)
-
-@tool
 def get_stock_prices(tickers: str, period: str="1000d", interval: str="1d") -> pd.DataFrame:
     """
     Function to get historical price given the period and the interval
@@ -31,7 +18,7 @@ def get_stock_prices(tickers: str, period: str="1000d", interval: str="1d") -> p
     return data[['Close', 'Volume']]
 
 @tool
-def get_financials(ticker):
+def get_financials(ticker: str) -> str:
     """
     Function to get the financial of a company
     :Parameters:
@@ -39,17 +26,20 @@ def get_financials(ticker):
         Valid inputs: TSLA, AAPL, ..., you can get them from get_tickers
     """
     tck = yf.Ticker(ticker)
-    return tck.get_financials()
+    df = tck.get_financials()
+    df.to_csv(f"../data/{ticker.lower()}_financials.csv")
+    return f"Saved the information in ../data/{ticker.lower()}_financials.csv, this is a preview \n" + df.head().to_markdown() 
+
 
 @tool
-def get_multiple_financials(tickers: str) -> pd.DataFrame:
+def get_multiple_financials(tickers: str) -> str:
     """
     Function to get the financials for multiple tickers
     Args:
         tickers (str): valid inputs are TSLA, AAPL, ..., you can get them from get_tickers
 
     Returns:
-        pd.DataFrame: Final dataframe with all the financials
+        str: Preview of the final dataframe with all the financials
     """
     tickers = [yf.Ticker(ticker) for ticker in tickers]
     dfs = [] # list for each ticker's dataframe
@@ -75,20 +65,23 @@ def get_multiple_financials(tickers: str) -> pd.DataFrame:
     df = pd.concat(dfs, ignore_index=True)
     df = df.T.drop_duplicates().T
     df = df.set_index(['Ticker','Date'])
-    return df
+    df.to_csv(f"../data/{tickers.join("_").lower()}_financials.csv")
+    return f"Saved the information in ../data/{tickers.join("_").lower()}_financials.csv, this is a preview \n" + df.head().to_markdown() 
 
 @tool
-def get_institutional_holders(ticker: str) -> pd.DataFrame:
+def get_institutional_holders(ticker: str) -> str:
     """
     Function to get all the institutional holders of the ticker stock
     Args:
         ticker (str): valid inputs are TSLA, AAPL, ..., you can get them from get_tickers
 
     Returns:
-        pd.DataFrame: Dataframe with the institutional holders data
+        str: header of the saved file with the requested information
     """
     tck = yf.Ticker(ticker)
-    return tck.institutional_holders
+    df = tck.institutional_holders
+    df.to_csv(f"../data/{ticker.lower()}_institutional_information.csv")
+    return f"Saved the information in ../data/{ticker.lower()}_institutional_information.csv, this is a preview \n" + df.head().to_markdown() 
 
 @tool
 def get_ticker(company_name: str) -> str:
