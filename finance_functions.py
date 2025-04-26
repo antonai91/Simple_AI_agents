@@ -1,5 +1,6 @@
-import yfinance as yf
+import yfinance as yf # type: ignore
 import pandas as pd
+import requests
 
 def STOCK(ticker, period="max"):
     """
@@ -59,3 +60,20 @@ def get_multiple_financials(tickers):
 def get_institutional_holders(ticker):
     tck = yf.Ticker(ticker)
     return tck.institutional_holders
+
+def get_ticker(company_name):
+    """
+    Get the ticker based on the company name
+    Parameters:
+    company_name: str
+        Free text
+    """
+    yfinance_url = "https://query2.finance.yahoo.com/v1/finance/search"
+    user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36'
+    params = {"q": company_name, "quotes_count": 1, "country": "United States"}
+
+    res = requests.get(url=yfinance_url, params=params, headers={'User-Agent': user_agent})
+    data = res.json()
+
+    company_code = data['quotes'][0]['symbol']
+    return company_code
