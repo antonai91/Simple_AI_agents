@@ -1,8 +1,10 @@
 import yfinance as yf # type: ignore
 import pandas as pd
 import requests
+from langchain_core.tools import tool
 
-def STOCK(ticker, period="max"):
+@tool
+def STOCK(ticker: str, period: str="max") -> pd.DataFrame:
     """
     Function to get open, high, low, ... data of a stock in a tabular format
     :Parameters:
@@ -14,8 +16,10 @@ def STOCK(ticker, period="max"):
     """
     return yf.Ticker(ticker).history(period=period).reset_index(drop=False)
 
-def get_stock_prices(tickers, period="1000d", interval="1d"):
+@tool
+def get_stock_prices(tickers: str, period: str="1000d", interval: str="1d") -> pd.DataFrame:
     """
+    Function to get historical price given the period and the interval
     :Parameters:
     period : str
         Valid periods: 1d,5d,1mo,3mo,6mo,1y,2y,5y,10y,ytd,max
@@ -26,11 +30,27 @@ def get_stock_prices(tickers, period="1000d", interval="1d"):
     data = yf.download(list(tickers), group_by='column', period=period, interval=interval)
     return data[['Close', 'Volume']]
 
+@tool
 def get_financials(ticker):
+    """
+    Function to get the financial of a company
+    :Parameters:
+    ticker: str
+        Valid inputs: TSLA, AAPL, ..., you can get them from get_tickers
+    """
     tck = yf.Ticker(ticker)
     return tck.get_financials()
 
-def get_multiple_financials(tickers):
+@tool
+def get_multiple_financials(tickers: str) -> pd.DataFrame:
+    """
+    Function to get the financials for multiple tickers
+    Args:
+        tickers (str): valid inputs are TSLA, AAPL, ..., you can get them from get_tickers
+
+    Returns:
+        pd.DataFrame: Final dataframe with all the financials
+    """
     tickers = [yf.Ticker(ticker) for ticker in tickers]
     dfs = [] # list for each ticker's dataframe
     for ticker in tickers:
@@ -57,10 +77,20 @@ def get_multiple_financials(tickers):
     df = df.set_index(['Ticker','Date'])
     return df
 
-def get_institutional_holders(ticker):
+@tool
+def get_institutional_holders(ticker: str) -> pd.DataFrame:
+    """
+    Function to get all the institutional holders of the ticker stock
+    Args:
+        ticker (str): valid inputs are TSLA, AAPL, ..., you can get them from get_tickers
+
+    Returns:
+        pd.DataFrame: Dataframe with the institutional holders data
+    """
     tck = yf.Ticker(ticker)
     return tck.institutional_holders
 
+@tool
 def get_ticker(company_name: str) -> str:
     """
     Get the ticker based on the company name
@@ -75,5 +105,4 @@ def get_ticker(company_name: str) -> str:
     res = requests.get(url=yfinance_url, params=params, headers={'User-Agent': user_agent})
     data = res.json()
 
-    company_code = data['quotes'][0]['symbol']
-    return company_code
+    return data['quotes'][0]['symbol'] if data and data["quotes"] else None
