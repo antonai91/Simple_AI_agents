@@ -92,7 +92,7 @@ def get_ticker(company_name: str) -> str:
         Free text
     """
     yfinance_url = "https://query2.finance.yahoo.com/v1/finance/search"
-    user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36'
+    user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
     params = {"q": company_name, "quotes_count": 1, "country": "United States"}
 
     res = requests.get(url=yfinance_url, params=params, headers={'User-Agent': user_agent})
